@@ -1,0 +1,104 @@
+To generate a matrix of palette colors and show which ones pass a contrast threshold using tinycolor and .toHsl method, you can follow these steps:
+
+- Define the foreground and background colors as tinycolor objects. For example, you can use black and white as the foreground and background colors.
+- Define the contrast threshold value that you want to use as a minimum requirement for readability. For example, you can use 4.5 as the WCAG 2.0 recommendation for normal text.
+- Define the number of palette colors that you want to generate. For example, you can use 9 as a reasonable number for a 3x3 matrix.
+- Define a function that generates a palette color based on the foreground and background colors and an index. The function should do the following:
+  - Convert the foreground and background colors to HSL using .toHsl method.
+  - Calculate the average hue, saturation and lightness of the foreground and background colors.
+  - Adjust the hue, saturation and lightness values based on the index to create some variation. For example, you can use a simple formula like `value = (value + index * 10) % 100` to change the value by 10% for each index.
+  - Create a new tinycolor object from the adjusted HSL values using .fromRatio method.
+  - Return the new tinycolor object as the palette color.
+- Loop through the number of palette colors and call the function for each index. Store the palette colors in an array or a matrix.
+- Loop through the palette colors and calculate the contrast ratio between each palette color and the background color using .getLuminance method and a custom function. Compare the result with the contrast threshold and mark the palette colors that pass or fail the requirement. For example, you can use a boolean array or a matrix to store the results.
+- Display the palette colors and their contrast results in a visual way. For example, you can use HTML and CSS to create a table or a grid with colored cells and text labels.
+
+Here is an example of a possible script that implements these steps:
+
+```javascript
+// Import tinycolor library
+var tinycolor = require ('tinycolor2');
+
+// Define the foreground and background colors
+var foreground = tinycolor ('black');
+var background = tinycolor ('white');
+
+// Define the contrast threshold value
+var threshold = 4.5;
+
+// Define the number of palette colors
+var numColors = 9;
+
+// Define a function that generates a palette color
+function generateColor (foreground, background, index) {
+  // Convert the foreground and background colors to HSL
+  var hsl1 = foreground.toHsl ();
+  var hsl2 = background.toHsl ();
+  // Calculate the average hue, saturation and lightness
+  var hue = (hsl1.h + hsl2.h) / 2;
+  var sat = (hsl1.s + hsl2.s) / 2;
+  var lig = (hsl1.l + hsl2.l) / 2;
+  // Adjust the hue, saturation and lightness values based on the index
+  hue = (hue + index * 10) % 360;
+  sat = (sat + index * 0.1) % 1;
+  lig = (lig + index * 0.1) % 1;
+  // Create a new tinycolor object from the adjusted HSL values
+  var color = tinycolor.fromRatio ({ h: hue / 360, s: sat, l: lig });
+  // Return the new tinycolor object
+  return color;
+}
+
+// Loop through the number of palette colors and generate them
+var palette = [];
+for (var i = 0; i < numColors; i++) {
+  // Call the generateColor function for each index
+  var color = generateColor (foreground, background, i);
+  // Store the color in the palette array
+  palette.push (color);
+}
+
+// Define a function that calculates the contrast ratio between two colors
+function contrast (color1, color2) {
+  // Get the luminance of each color
+  var lum1 = color1.getLuminance ();
+  var lum2 = color2.getLuminance ();
+  // Calculate the contrast ratio
+  var ratio = (Math.max (lum1, lum2) + 0.05) / (Math.min (lum1, lum2) + 0.05);
+  return ratio;
+}
+
+// Loop through the palette colors and check their contrast with the background color
+var results = [];
+for (var i = 0; i < numColors; i++) {
+  // Get the palette color and the background color
+  var color = palette[i];
+  var bg = background;
+  // Calculate the contrast ratio between them
+  var ratio = contrast (color, bg);
+  // Compare the ratio with the threshold and mark the result
+  var result = ratio >= threshold;
+  // Store the result in the results array
+  results.push (result);
+}
+
+// Display the palette colors and their contrast results
+// For simplicity, we use HTML and CSS to create a table with colored cells and text labels
+// You can use any other method to display the data in a visual way
+var html = '<table>';
+for (var i = 0; i < numColors; i++) {
+  // Get the palette color and the result
+  var color = palette[i];
+  var result = results[i];
+  // Convert the color to hex string
+  var hex = color.toHexString ();
+  // Create a table row with a colored cell and a text label
+  html += '<tr>';
+  html += '<td style="background-color:' + hex + '"></td>';
+  html += '<td>' + hex + ' (' + (result ? 'pass' : 'fail') + ')</td>';
+  html += '</tr>';
+}
+html += '</table>';
+
+// Insert the HTML into the document body
+document.body.innerHTML = html;
+```
